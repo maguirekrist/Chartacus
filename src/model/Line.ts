@@ -1,8 +1,8 @@
-import { Drawable, Point } from "./Data";
+import { Point } from "./Data";
 
 
 
-class Line implements Drawable {
+class Line  {
     data: Point;
 
     constructor(data: Point) {
