@@ -1,13 +1,14 @@
 import { mat4, vec3, vec4 } from "gl-matrix";
 import { IDrawable, Renderer, RendererVistor } from "./Renderer";
-import { Point } from "./model/Data";
+import { Color, Point } from "./model/Data";
+import { canvas } from "./utils/Globals";
 
 document.addEventListener('DOMContentLoaded', () => {
     main();
 });
 
 function main() {
-    var gl = canvas.getContext("webgl2");
+    var gl = canvas.getCanvas().getContext("webgl2");
     if(!gl)
     {
         var element = document.createElement("div");
@@ -26,7 +27,7 @@ function main() {
         const render = (time: number) => {
             time *= 0.001;
         
-            canvasHelper.resizeCanvasToDisplay(canvas);
+            canvas.resizeCanvasToDisplay();
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
             const clearColor: Color = { 

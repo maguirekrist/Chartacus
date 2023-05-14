@@ -3,7 +3,7 @@ import { IRender } from "../Renderer";
 import { Point } from "../model/Data";
 import { fragmentShaderSource, vertexShaderSource } from "../shaders/basic";
 import { webglUtils } from "../utils/webglUtils";
-import { canvas } from "../Canvas";
+import { canvas } from "../utils/Globals";
 
 
 export class PointRenderer implements IRender<Point> { 
@@ -58,7 +58,7 @@ export class PointRenderer implements IRender<Point> {
         this.gl.useProgram(this.program);
         this.gl.bindVertexArray(this.vao);
 
-        this.gl.uniform2fv(this.resolutionLoc, [canvas.clientWidth, canvas.clientHeight]);
+        this.gl.uniform2fv(this.resolutionLoc, [canvas.getCanvas().clientWidth, canvas.getCanvas().clientHeight]);
 
         this.gl.uniform4fv(this.colorLoc, [1.0, 0.5, 0.5, 1.0]);
 

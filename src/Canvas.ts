@@ -1,6 +1,6 @@
 
 export class Canvas {
-    public canvas: HTMLCanvasElement
+    private canvas: HTMLCanvasElement
 
     constructor() {
         this.canvas = document.getElementById("c") as HTMLCanvasElement;
@@ -14,5 +14,9 @@ export class Canvas {
     public resizeCanvasToDisplay() {
         this.canvas.width = this.canvas.clientWidth;
         this.canvas.height = this.canvas.clientHeight;
+    }
+
+    public getCanvas() {
+        return this.canvas;
     }
 }
