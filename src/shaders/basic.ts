@@ -3,18 +3,11 @@ export const vertexShaderSource = `#version 300 es
 in vec4 a_position;
 uniform mat4 model;
 uniform mat4 view;
+uniform mat4 projection;
 uniform vec2 u_resolution;
 
 void main() {
-    float aspectRatio = u_resolution.x / u_resolution.y;
-    float aspectRatioY = u_resolution.y / u_resolution.x;
-
-    mat4 newModel = model;
-
-    newModel[0][0] /= aspectRatio;
-    //newModel[1][1] = 1.0;
-
-    gl_Position = view * model * a_position;
+    gl_Position = projection * model * a_position;
 }
 `;
     
@@ -27,6 +20,7 @@ uniform vec4 color;
 uniform vec2 u_resolution;
 uniform mat4 model;
 uniform mat4 view;
+uniform mat4 projection;
 
 const float circleRadius = 0.5;
     
@@ -34,21 +28,52 @@ const float circleRadius = 0.5;
 out vec4 outColor;
     
 void main() {
-    vec4 circleCenter = view * model * vec4(0.5, 0.5, 0, 1.0);
+    // float aspect = u_resolution.x / u_resolution.y;
+    // vec4 circleCenter = projection * view * model * vec4(0.5, 0.5, 0, 1.0); //This value is in NDC
 
-    //Normalize
-    vec4 normFragCoord = gl_FragCoord / vec4(u_resolution.x, u_resolution.y, 0.0, 0.0);
+    // mat4 mvp = projection * view * model;
+    // float adjustedRadius = circleRadius * model[0][0];
 
-    //map to NDC
-    vec4 ndcFragCoord = normFragCoord * vec4(2, 2, 0, 0);
-    ndcFragCoord += vec4(-1, -1, 0, 0);
+    // //Normalize
+    // vec2 ndc = (gl_FragCoord.xy / u_resolution) * 2.0 - 1.0;
+    // // vec2 ndc = normFragCoord * vec2(2, 2);
+    // // ndc += vec2(-1, -1);
 
-    float distance = length(ndcFragCoord.xy - circleCenter.xy);
+    // ndc.x -= circleCenter.x;
+    // ndc.x *= aspect;
+    // ndc.x *= 1.0 / view[0][0];
+    // ndc.x += circleCenter.x;
+
+    // ndc.y -= circleCenter.y;
+    // ndc.y /= view[1][1];
+    // ndc.y += circleCenter.y;
+
+    // //ndc.y /= aspect;
     
-    if(distance > (circleRadius * model[0][0])) {
-        discard;
-    } else {
-        outColor = color;
-    }
+    // float distance = length(ndc - circleCenter.xy);
+
+    
+    // if((circleCenter.x >= ndc.x -0.05 && circleCenter.x <= ndc.x + 0.05) && (circleCenter.y >= ndc.y - 0.05 && circleCenter.y <= ndc.y + 0.05)) {
+    //     outColor = vec4(1.0, 0.0, 0.0, 1.0);
+    // } else {
+    //     if(distance > (adjustedRadius)) {
+    //         outColor = vec4(1.0, 1.0, 0.0, 1.0); 
+    //     } else {
+    //         outColor = color;
+    //     }
+    // }
+
+    // if(distance > (circleRadius * mvp[0][0])) {
+    //     outColor = vec4(1.0, 1.0, 0.0, 1.0); 
+    // } else {
+    //     outColor = color;
+    // }
+
+    // if(distance > (circleRadius * viewModel[0][0]) && distance > (circleRadius * viewModel[1][1]) ) {
+    //     outColor = vec4(1.0, 0.0, 0.0, 1.0);
+    // } else {
+    //     outColor = color;
+    // }
+    outColor = color;
 }
 `;

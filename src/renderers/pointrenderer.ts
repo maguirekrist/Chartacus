@@ -8,12 +8,12 @@ import { canvas } from "../utils/globals";
 
 export class PointRenderer implements IRender<Point> { 
     quadPoints = [
-        0,0,
-        0, 1,
-        1, 0,
-        1, 0,
-        0,1,
-        1,1
+        -1,-1,
+        -1, 1,
+        1, -1,
+        1, 1,
+        -1,1,
+        1,-1
     ]; 
 
     gl: WebGL2RenderingContext;
@@ -21,6 +21,7 @@ export class PointRenderer implements IRender<Point> {
     positionAttributeLocation: number;
     colorLoc: WebGLUniformLocation;
     modelLoc: WebGLUniformLocation;
+    projectionLoc: WebGLUniformLocation;
     viewLoc: WebGLUniformLocation;
     resolutionLoc: WebGLUniformLocation;
 
@@ -36,6 +37,7 @@ export class PointRenderer implements IRender<Point> {
         this.colorLoc = this.gl.getUniformLocation(this.program, "color");
         this.modelLoc = this.gl.getUniformLocation(this.program, "model");
         this.viewLoc = this.gl.getUniformLocation(this.program, "view");
+        this.projectionLoc = this.gl.getUniformLocation(this.program, "projection");
         this.resolutionLoc = this.gl.getUniformLocation(this.program, "u_resolution");
 
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.quadPoints), gl.STATIC_DRAW);
@@ -64,7 +66,7 @@ export class PointRenderer implements IRender<Point> {
         this.gl.uniform4fv(this.colorLoc, [1.0, 0.5, 0.5, 1.0]);
 
         const vec3Scale = vec3.create();
-        vec3.set(vec3Scale, 0.15, 0.15, 0);
+        vec3.set(vec3Scale, 1, 1, 0); //this is our scale value, needs to be configurable I
 
         const vec3trans = vec3.create();
         vec3.set(vec3trans, element.x, element.y, 0);
@@ -77,6 +79,7 @@ export class PointRenderer implements IRender<Point> {
 
         this.gl.uniformMatrix4fv(this.modelLoc, false, mat); //4x4 matrix
         this.gl.uniformMatrix4fv(this.viewLoc, false, canvas.getView());
+        this.gl.uniformMatrix4fv(this.projectionLoc, false, canvas.getProjection());
         //gl.uniformMatrix4fv(projectionLoc, false, projectionMatrix);
 
         var primitiveType = this.gl.TRIANGLES;

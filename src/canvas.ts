@@ -3,6 +3,7 @@ import { ReadonlyMat4, mat4, vec2, vec3 } from "gl-matrix";
 export class Canvas {
     private canvas: HTMLCanvasElement
     private view: mat4 = mat4.create();
+    private projection: mat4 = mat4.create();
 
     private dragging: boolean = false;
     private zoom: number = 1;
@@ -20,6 +21,8 @@ export class Canvas {
         this.canvas.addEventListener('mousemove', (event) => this.handleMouseMove(event));
         this.canvas.addEventListener('mouseup', (event) => this.handleMouseUp(event));
         this.canvas.addEventListener('mouseleave', (event) => this.handleMouseLeave(event))
+        window.addEventListener('resize', () => this.handleResize());
+        this.handleResize();
     }
 
     private handleScroll(event: WheelEvent) {
@@ -30,21 +33,29 @@ export class Canvas {
 
             this.zoom += (event.deltaY / Math.abs(event.deltaY)) * -0.1; //zoom sensitvity
             this.zoom = Math.min(Math.max(0.125, this.zoom), 4); //restrict the zoom level here
+            this.updateView();
         }
     }
 
     private handleClick(event: MouseEvent) {
         if(event.button == 0) {
             this.dragging = true;
+            this.toggleDragCursor();
         }
     }
 
     private handleMouseUp(event: MouseEvent) {
         this.dragging = false;
+        this.toggleDragCursor();
     }
 
     private handleMouseLeave(event: MouseEvent) {
         this.dragging = false;
+        this.toggleDragCursor();
+    }
+
+    private toggleDragCursor() {
+        this.canvas.style.cursor = this.dragging ? "grabbing" : "default";
     }
 
     private handleMouseMove(event: MouseEvent) {
@@ -52,25 +63,40 @@ export class Canvas {
         //console.log(`mouse move: x -> ${event.offsetX}, y -> ${this.canvas.clientHeight - event.offsetY}`)
         vec2.set(this.mousePosition, event.offsetX, this.canvas.clientHeight - event.offsetY);
         if(this.dragging) {
-            console.log(`mouse move last: ${event.movementX}, ${event.movementY}`)
             //vec2.set(this.camPos, this.mousePosition[0] / this.canvas.clientWidth, this.mousePosition[1] / this.canvas.clientHeight)
             let changeVec = vec2.create();
             vec2.set(changeVec, event.movementX / this.canvas.clientWidth, -event.movementY / this.canvas.clientHeight);
             vec2.add(this.camPos, this.camPos, changeVec);
+            this.updateView();
         }
     }
 
-    public resizeCanvasToDisplay() {
-        this.canvas.width = this.canvas.clientWidth;
-        this.canvas.height = this.canvas.clientHeight;
+    private handleResize() {
+        const aspectRatio = this.canvas.clientWidth / this.canvas.clientHeight;
+
+        let scaleX = 1.0;
+        let scaleY = 1.0;
+        
+        if (aspectRatio > 1.0) {
+          scaleY = 1.0 / aspectRatio;
+        } else {
+          scaleX = aspectRatio;
+        }
+
+        const desiredWidth = 100.0; // Desired width of your rendering
+        const desiredHeight = 100.0; // Desired height of your rendering
+      
+        // Create an orthographic projection matrix
+        mat4.ortho(this.projection,
+            -desiredWidth * scaleX,
+            desiredWidth * scaleX,
+            -desiredHeight * scaleY,
+            desiredHeight * scaleY,
+            -1.0,
+            1.0);
     }
 
-    public getCanvas() {
-        return this.canvas;
-    }
-
-
-    public getView() { 
+    private updateView() {
         var tempView = mat4.create();
         var scaleVec = vec3.create();
         var transVec = vec3.create();
@@ -81,6 +107,28 @@ export class Canvas {
         mat4.scale(tempView, tempView, scaleVec);
         mat4.translate(tempView, tempView, transVec);
 
-        return tempView;
+        this.view = tempView;
     }
+
+    public resizeCanvasToDisplay() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+
+        console.log(`width: ${this.canvas.width}, height: ${this.canvas.height}, aspect: ${this.canvas.width / this.canvas.height}`)
+    }
+
+    public getCanvas() {
+        return this.canvas;
+    }
+
+
+    public getView() { 
+        
+        return this.view;
+    }
+
+    public getProjection() {
+        return this.projection;
+    }
+      
 }

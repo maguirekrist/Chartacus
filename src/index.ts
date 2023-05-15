@@ -18,8 +18,7 @@ function main() {
         const renderer = new Renderer(gl);
 
         var points: Point[] = [
-            new Point(0, -1),
-            new Point(0.5, 0.5),
+            new Point(0, 0),
             // new Point(0.9, 0.8)
         ];
 
