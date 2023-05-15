@@ -1,7 +1,6 @@
-import { mat4, vec3, vec4 } from "gl-matrix";
-import { IDrawable, Renderer, RendererVistor } from "./Renderer";
-import { Color, Point } from "./model/Data";
-import { canvas } from "./utils/Globals";
+import { IDrawable, Renderer, RendererVistor } from "./renderer";
+import { Color, Point } from "./model/data";
+import { canvas } from "./utils/globals";
 
 document.addEventListener('DOMContentLoaded', () => {
     main();
@@ -49,6 +48,7 @@ function main() {
     } 
 
 }
+
 function drawAllDrawables(elements: IDrawable[], renderer: RendererVistor) {
     for(let elem of elements) {
         elem.accept(renderer);

@@ -1,4 +1,4 @@
-import { IDrawable, RendererVistor } from "../Renderer";
+import { IDrawable, RendererVistor } from "../renderer";
 
 export type Color = { 
     r: number;
@@ -21,6 +21,4 @@ export class Point implements IDrawable {
     }
 }
 
-
-export type Series = Point[];
 

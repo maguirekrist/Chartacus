@@ -2,7 +2,7 @@ export const vertexShaderSource = `#version 300 es
     
 in vec4 a_position;
 uniform mat4 model;
-uniform mat4 projection;
+uniform mat4 view;
 uniform vec2 u_resolution;
 
 void main() {
@@ -14,7 +14,7 @@ void main() {
     newModel[0][0] /= aspectRatio;
     //newModel[1][1] = 1.0;
 
-    gl_Position = model * a_position;
+    gl_Position = view * model * a_position;
 }
 `;
     
@@ -26,6 +26,7 @@ precision highp float;
 uniform vec4 color;
 uniform vec2 u_resolution;
 uniform mat4 model;
+uniform mat4 view;
 
 const float circleRadius = 0.5;
     
@@ -33,7 +34,7 @@ const float circleRadius = 0.5;
 out vec4 outColor;
     
 void main() {
-    vec4 circleCenter = model * vec4(0.5, 0.5, 0, 1.0);
+    vec4 circleCenter = view * model * vec4(0.5, 0.5, 0, 1.0);
 
     //Normalize
     vec4 normFragCoord = gl_FragCoord / vec4(u_resolution.x, u_resolution.y, 0.0, 0.0);
@@ -43,23 +44,11 @@ void main() {
     ndcFragCoord += vec4(-1, -1, 0, 0);
 
     float distance = length(ndcFragCoord.xy - circleCenter.xy);
-
-    // if((circleCenter.x >= ndcFragCoord.x -0.05 && circleCenter.x <= ndcFragCoord.x + 0.05) && (circleCenter.y >= ndcFragCoord.y - 0.05 && circleCenter.y <= ndcFragCoord.y + 0.05)) {
-    //     outColor = vec4(1.0, 0.0, 0.0, 1.0);
-    // } else {
-    //     if(distance > (circleRadius * model[0][0])) {
-    //         //outColor = vec4(1.0, 1.0, 0.0, 1.0);
-    //         discard;
-    //     } else {
-    //         outColor = color;
-    //     }
-    // }
+    
     if(distance > (circleRadius * model[0][0])) {
-        //outColor = vec4(1.0, 1.0, 0.0, 1.0);
         discard;
     } else {
         outColor = color;
     }
-    //outColor = color;
 }
 `;

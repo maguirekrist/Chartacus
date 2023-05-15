@@ -1,3 +1,3 @@
-import { Canvas } from "../Canvas";
+import { Canvas } from "../canvas";
 
 export const canvas = new Canvas();

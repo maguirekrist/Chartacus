@@ -1,4 +1,4 @@
-import { Point } from "./Data";
+import { Point } from "./data";
 
 
 

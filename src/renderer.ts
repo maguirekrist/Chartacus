@@ -1,5 +1,5 @@
-import { Point } from "./model/Data";
-import { PointRenderer } from "./renderers/PointRenderer";
+import { Point } from "./model/data";
+import { PointRenderer } from "./renderers/pointrenderer";
 
 export interface RendererVistor {
     draw(point: Point) : void;

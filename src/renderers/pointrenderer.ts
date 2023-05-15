@@ -1,9 +1,9 @@
 import { mat4, vec3 } from "gl-matrix";
-import { IRender } from "../Renderer";
-import { Point } from "../model/Data";
+import { IRender } from "../renderer";
+import { Point } from "../model/data";
 import { fragmentShaderSource, vertexShaderSource } from "../shaders/basic";
 import { webglUtils } from "../utils/webglUtils";
-import { canvas } from "../utils/Globals";
+import { canvas } from "../utils/globals";
 
 
 export class PointRenderer implements IRender<Point> { 
@@ -21,6 +21,7 @@ export class PointRenderer implements IRender<Point> {
     positionAttributeLocation: number;
     colorLoc: WebGLUniformLocation;
     modelLoc: WebGLUniformLocation;
+    viewLoc: WebGLUniformLocation;
     resolutionLoc: WebGLUniformLocation;
 
     vao: WebGLVertexArrayObject;
@@ -34,7 +35,7 @@ export class PointRenderer implements IRender<Point> {
         this.positionAttributeLocation = this.gl.getAttribLocation(this.program, "a_position");
         this.colorLoc = this.gl.getUniformLocation(this.program, "color");
         this.modelLoc = this.gl.getUniformLocation(this.program, "model");
-
+        this.viewLoc = this.gl.getUniformLocation(this.program, "view");
         this.resolutionLoc = this.gl.getUniformLocation(this.program, "u_resolution");
 
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.quadPoints), gl.STATIC_DRAW);
@@ -75,6 +76,7 @@ export class PointRenderer implements IRender<Point> {
         mat4.translate(mat, mat, vec3trans);
 
         this.gl.uniformMatrix4fv(this.modelLoc, false, mat); //4x4 matrix
+        this.gl.uniformMatrix4fv(this.viewLoc, false, canvas.getView());
         //gl.uniformMatrix4fv(projectionLoc, false, projectionMatrix);
 
         var primitiveType = this.gl.TRIANGLES;
