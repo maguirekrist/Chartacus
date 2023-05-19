@@ -8,18 +8,19 @@ import { canvas } from "../utils/globals";
 
 export class PointRenderer implements IRender<Point> { 
     quadPoints = [
-        -1,-1,
-        -1, 1,
-        1, -1,
-        1, 1,
-        -1,1,
-        1,-1
+        0,0,
+        0, 1,
+        1, 0,
+        1, 0,
+        0,1,
+        1,1
     ]; 
 
     gl: WebGL2RenderingContext;
     program: WebGLProgram;
     positionAttributeLocation: number;
     colorLoc: WebGLUniformLocation;
+    strokeColorLoc: WebGLUniformLocation;
     modelLoc: WebGLUniformLocation;
     projectionLoc: WebGLUniformLocation;
     viewLoc: WebGLUniformLocation;
@@ -35,6 +36,7 @@ export class PointRenderer implements IRender<Point> {
 
         this.positionAttributeLocation = this.gl.getAttribLocation(this.program, "a_position");
         this.colorLoc = this.gl.getUniformLocation(this.program, "color");
+        this.strokeColorLoc = this.gl.getUniformLocation(this.program, "strokeColor");
         this.modelLoc = this.gl.getUniformLocation(this.program, "model");
         this.viewLoc = this.gl.getUniformLocation(this.program, "view");
         this.projectionLoc = this.gl.getUniformLocation(this.program, "projection");
@@ -61,12 +63,14 @@ export class PointRenderer implements IRender<Point> {
         this.gl.useProgram(this.program);
         this.gl.bindVertexArray(this.vao);
 
+
         this.gl.uniform2fv(this.resolutionLoc, [canvas.getCanvas().clientWidth, canvas.getCanvas().clientHeight]);
 
-        this.gl.uniform4fv(this.colorLoc, [1.0, 0.5, 0.5, 1.0]);
+        this.gl.uniform4fv(this.colorLoc, element.getColorAsArray());
+        this.gl.uniform4fv(this.strokeColorLoc, element.getColorAsArray());
 
         const vec3Scale = vec3.create();
-        vec3.set(vec3Scale, 1, 1, 0); //this is our scale value, needs to be configurable I
+        vec3.set(vec3Scale, element.width, element.height, 0); //this is our scale value, needs to be configurable I
 
         const vec3trans = vec3.create();
         vec3.set(vec3trans, element.x, element.y, 0);
