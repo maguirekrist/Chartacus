@@ -1,15 +1,16 @@
-import { Point } from "./data";
+import { IDrawable, RendererVistor } from "../renderer";
+import { Coordinate, Point } from "./data";
 
 
 
-class Line  {
-    data: Point;
+export class Line implements IDrawable {
+    data: Coordinate[];
 
-    constructor(data: Point) {
+    constructor(data: Coordinate[]) {
         this.data = data;
     }
 
-    render(): void {
-        console.log("Render Line");
+    accept(visitor: RendererVistor): void {
+        visitor.drawLine(this);
     }
 }

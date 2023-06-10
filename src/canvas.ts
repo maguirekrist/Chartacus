@@ -8,9 +8,9 @@ export class Canvas {
     private projection: mat4;
 
     private dragging: boolean = false;
-    private zoom: number = 1;
+    public zoom: number = 1;
     private mousePosition: vec3 = vec3.create();
-    private camPos: vec2 = vec2.create();
+    public camPos: vec2 = vec2.create();
     private camCenter: vec2 = vec2.create();
 
 
@@ -33,6 +33,7 @@ export class Canvas {
         vec2.set(this.camCenter, 
             (this.canvas.clientWidth / 2.0) * this.zoom, 
             (this.canvas.clientHeight / 2.0) * this.zoom);
+        this.updateView();
     }
 
     private handleScroll(event: WheelEvent) {
@@ -42,7 +43,7 @@ export class Canvas {
             }
             this.zoom += (event.deltaY / Math.abs(event.deltaY)) * -0.1; //zoom sensitvity
             this.zoom = Math.min(Math.max(0.125, this.zoom), 4); //restrict the zoom level here
-
+            this.zoom = Math.round(this.zoom * 100) / 100;
             //console.log(this.zoom)
 
             let newCenter = vec2.create();
@@ -61,7 +62,7 @@ export class Canvas {
             vec2.negate(diff, diff);
             //console.log(diff);
             vec2.add(this.camPos, this.camPos, diff);
-            vec2.floor(this.camPos, this.camPos);
+            //vec2.floor(this.camPos, this.camPos);
 
             this.updateView();
         }
@@ -148,16 +149,12 @@ export class Canvas {
         var scaleVec = vec3.create();
         var transVec = vec3.create();
         vec3.set(scaleVec, this.zoom, this.zoom, 1.0);
-        vec3.set(transVec, Math.floor(this.camPos[0]), Math.floor(this.camPos[1]), 1.0);
-        console.log(transVec)
+        vec3.set(transVec, this.camPos[0], this.camPos[1], 1.0);
+
 
         mat4.identity(tempView);
-        mat4.translate(tempView, tempView, transVec);
         mat4.scale(tempView, tempView, scaleVec);
-        console.log(tempView)
-    
-        // console.log("View: ")
-        // console.log(tempView)
+        mat4.translate(tempView, tempView, transVec);
 
         this.view = tempView;
     }

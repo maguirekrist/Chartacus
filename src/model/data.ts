@@ -7,6 +7,11 @@ export type Color = {
     a?: number;
 }
 
+export type Coordinate = {
+    x: number;
+    y: number;
+}
+
 export interface IPositionable {
     x: number;
     y: number;
