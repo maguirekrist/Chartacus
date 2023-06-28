@@ -8,7 +8,7 @@ export class Canvas {
     private projection: mat4;
 
     private dragging: boolean = false;
-    public zoom: number = 1;
+    public zoom: number = 0.4;
     private mousePosition: vec3 = vec3.create();
     public camPos: vec2 = vec2.create();
     private camCenter: vec2 = vec2.create();

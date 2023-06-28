@@ -1,6 +1,7 @@
 import { IDrawable, Renderer, RendererVistor } from "./renderer";
 import { Color, Grid, Point } from "./model/data";
 import { canvas } from "./utils/globals";
+import { Candle } from "./model/candle";
 
 document.addEventListener('DOMContentLoaded', () => {
     main();
@@ -41,10 +42,13 @@ function main() {
 
         var points: Point[] = GenerateRandomPoints(10);
         var originPoint: Point = new Point(0, 0, { r: 1, g: 0, b: 0.0 });
-        var grid: Grid = new Grid(1.0);
-        var renderables: IDrawable[] = [grid, ...points, originPoint];
+        //var grid: Grid = new Grid(1.0);
 
-        canvas.initializeObjectMap([...points, originPoint]);
+        var testCandle: Candle = new Candle(3, 3, { v1: 120, v2: 60, v3: 20, v4: 10 });
+
+        var renderables: IDrawable[] = [...points, originPoint, testCandle];
+
+        canvas.initializeObjectMap([...points, originPoint, testCandle]);
 
         const render = (time: number) => {
             time *= 0.001;
