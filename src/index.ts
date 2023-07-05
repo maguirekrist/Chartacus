@@ -1,9 +1,13 @@
 import { IDrawable, Renderer, RendererVistor } from "./renderer";
-import { Color, Grid, Point } from "./model/data";
+import { Color, Grid } from "./model/data";
 import { canvas } from "./utils/globals";
+import { Text as TextObj } from './model/text'
+import { Font, load } from "opentype.js";
+import { Point } from "./model/point";
 
-document.addEventListener('DOMContentLoaded', () => {
-    main();
+document.addEventListener('DOMContentLoaded', async () => {
+    var font = await loadFont();
+    main(font);
 });
 
 function GenerateRandomPoints(amt: number) : Point[] {
@@ -11,8 +15,8 @@ function GenerateRandomPoints(amt: number) : Point[] {
 
     const getRandomPoint = (): Point => {
         return new Point(
-            Math.floor(Math.random() * 100),
-            Math.floor(Math.random() * 100),
+            Math.floor(Math.random() * 500),
+            Math.floor(Math.random() * 500),
             {
                 r: Math.random(),
                 g: Math.random(),
@@ -28,7 +32,7 @@ function GenerateRandomPoints(amt: number) : Point[] {
     return points;
 }
 
-function main() {
+function main(font: Font) {
     var gl = canvas.getCanvas().getContext("webgl2", { antialias: true });
     if(!gl)
     {
@@ -36,15 +40,17 @@ function main() {
         element.textContent = "Unable to load webgl2 context";
         document.body.appendChild(element);
     } else {
-        let [xNode, yNode, zoomNode] = initializeText();
         const renderer = new Renderer(gl);
 
         var points: Point[] = GenerateRandomPoints(10);
-        var originPoint: Point = new Point(0, 0, { r: 1, g: 0, b: 0.0 });
-        var grid: Grid = new Grid(1.0);
-        var renderables: IDrawable[] = [grid, ...points, originPoint];
+        var originPoint: Point = new Point(-40, -40, { r: 1, g: 0, b: 0.0 });
+        //var grid: Grid = new Grid(1.0);
+        
+        var testText = new TextObj("Hello world!", font, { x: 50, y: 50 });
 
-        canvas.initializeObjectMap([...points, originPoint]);
+        var renderables: IDrawable[] = [testText, ...points, originPoint];
+        
+        canvas.setSceneObjects([originPoint, testText, ...points])
 
         const render = (time: number) => {
             time *= 0.001;
@@ -52,7 +58,6 @@ function main() {
             canvas.resizeCanvasToDisplay();
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-            updateText(xNode, yNode, zoomNode);
 
             const clearColor: Color = { 
                 r: 1, 
@@ -74,34 +79,13 @@ function main() {
 
 }
 
-function initializeText() : [Text, Text, Text] {
-    // look up the elements we want to affect
-    var xElement = document.querySelector("#x-coord");
-    var yElement = document.querySelector("#y-coord");
-    var zoomElement = document.querySelector("#zoom");
-    
-    // Create text nodes to save some time for the browser
-    // and avoid allocations.
-    var xNode = document.createTextNode("");
-    var yNode = document.createTextNode("");
-    var zoomNode = document.createTextNode("");
-    
-    // Add those text nodes where they need to go
-    xElement.appendChild(xNode);
-    yElement.appendChild(yNode);
-    zoomElement.appendChild(zoomNode);
-
-    return [xNode, yNode, zoomNode];
-}
-
-function updateText(x: Text, y: Text, zoom: Text) {
-    x.nodeValue = canvas.camPos[0].toFixed(2);
-    y.nodeValue = canvas.camPos[1].toFixed(2);
-    zoom.nodeValue = canvas.zoom.toString();
-}
-
 function drawAllDrawables(elements: IDrawable[], renderer: RendererVistor) {
     for(let elem of elements) {
         elem.accept(renderer);
     }
+}
+
+async function loadFont(): Promise<Font> {
+    var font = await load("https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf");
+    return font;
 }

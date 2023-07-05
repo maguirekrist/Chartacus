@@ -1,6 +1,7 @@
 import { ReadonlyMat4, mat4, vec2, vec3 } from "gl-matrix";
-import { mathUtils } from "./utils/mathUtils";
+import { mathUtils, positionableContainsCoordinate } from "./utils/mathUtils";
 import { IPositionable } from "./model/data";
+import { Object2D } from "./model/object2D";
 
 export class Canvas {
     private canvas: HTMLCanvasElement
@@ -14,7 +15,7 @@ export class Canvas {
     private camCenter: vec2 = vec2.create();
 
 
-    private objectMap: Map<string, IPositionable>;
+    private sceneObjects: Object2D[];
 
 
     constructor() {
@@ -27,7 +28,7 @@ export class Canvas {
         this.canvas.addEventListener('mouseleave', (event) => this.handleMouseLeave(event))
         window.addEventListener('resize', () => this.handleResize());
         this.handleResize();
-        this.objectMap = new Map();
+        this.sceneObjects = [];
 
         vec2.set(this.camPos , 0, 0);
         vec2.set(this.camCenter, 
@@ -123,18 +124,18 @@ export class Canvas {
             //vec2.add(this.camCenter, this.camCenter, changeVec);
             //console.log(`Cam pos: ${this.camPos[0]}, ${this.camPos[1]}`)
             this.updateView();
+        } else {
+            this.canvas.style.cursor = "default";
         }
 
-        let key = `${Math.floor(this.mousePosition[0] / 25)},${Math.floor(this.mousePosition[1] / 25)}`;
-
-        if(!this.dragging) {
-            if(this.objectMap.has(key)) {
-                let obj = this.objectMap.get(key);
-                this.canvas.style.cursor = "pointer";
-            } else {
-                this.canvas.style.cursor = "default";
+        console.log(`x: ${this.mousePosition[0]}, y: ${this.mousePosition[1]}`);
+        for(let obj of this.sceneObjects) {
+            if(positionableContainsCoordinate(obj, { x: this.mousePosition[0], y: this.mousePosition[1] } )) {
+                this.canvas.style.cursor = "text";
             }
         }
+
+
 
     }
 
@@ -170,10 +171,12 @@ export class Canvas {
         return false;
     }
 
-    public initializeObjectMap(objects: IPositionable[]): void {
-        for(var obj of objects) {
-            this.objectMap.set(`${obj.x},${obj.y}`, obj);
-        }
+    public setSceneObjects(objs: Object2D[]) {
+        this.sceneObjects = objs;
+    }
+
+    public addObject(obj: Object2D) {
+        this.sceneObjects.push(obj);
     }
 
     public getCanvas() {

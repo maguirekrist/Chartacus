@@ -1,3 +1,4 @@
+import { mat4 } from "gl-matrix";
 import { IDrawable, RendererVistor } from "../renderer";
 
 export type Color = { 
@@ -13,11 +14,21 @@ export type Coordinate = {
 }
 
 export interface IPositionable {
-    x: number;
-    y: number;
+    position: Coordinate;
     width: number;
     height: number;
+    matrix: mat4;
     z?: number;
+
+}
+
+export type BufferAttribute = {
+    vertices: ArrayBuffer;
+    size: number;
+    type: number;
+    normalize: boolean;
+    offset?: number;
+    stride?: number;
 }
 
 export class Grid implements IDrawable {
@@ -29,31 +40,6 @@ export class Grid implements IDrawable {
 
     accept(visitor: RendererVistor): void {
         visitor.drawGrid(this);
-    }
-}
-
-export class Point implements IDrawable, IPositionable {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    color: Color;
-    strokeColor: Color;
-
-    constructor(x: number, y: number, color: Color) {
-        this.x = x;
-        this.y = y;
-        this.width = 25;
-        this.height = 25;
-        this.color = color;
-    }
-
-    public getColorAsArray(): number[] {
-        return [this.color.r, this.color.g, this.color.b, this.color.a ?? 1.0];
-    }
-
-    accept(visitor: RendererVistor): void {
-        visitor.draw(this);
     }
 }
 

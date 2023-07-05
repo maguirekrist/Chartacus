@@ -22,6 +22,7 @@ uniform vec2 u_resolution;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform float size;
     
 const float strokeSize = 8.0;
 
@@ -29,7 +30,7 @@ const float strokeSize = 8.0;
 out vec4 outColor;
     
 void main() {
-    vec4 center =  model * vec4(0.5, 0.5, 0.0, 1.0); //This value is in NDC
+    vec4 center =  model * vec4(0.5, -0.5, 0.0, 1.0); //This value is in NDC
 
     mat4 vp = projection * view;
 
@@ -39,7 +40,7 @@ void main() {
 
     float distance = length(uv.xy - center.xy);
 
-    if(distance > (25.0 / 2.0)) {
+    if(distance > (size / 2.0)) {
         outColor = vec4(1.0, 0.0, 0.0, 1.0);
         discard;
     } else if(distance > (25.0 - strokeSize) / 2.0) {

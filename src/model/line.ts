@@ -1,5 +1,5 @@
 import { IDrawable, RendererVistor } from "../renderer";
-import { Coordinate, Point } from "./data";
+import { Coordinate } from "./data";
 
 
 
