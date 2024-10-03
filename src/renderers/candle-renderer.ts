@@ -68,22 +68,10 @@ export class CandleRenderer implements IRender<Candle> {
 
         this.gl.uniform4fv(this.colorLoc, element.getColorAsArray());
 
-        const vec3Scale = vec3.create();
-        vec3.set(vec3Scale, element.width, element.height, 0); //this is our scale value, needs to be configurable I
-
-        const vec3trans = vec3.create();
-        vec3.set(vec3trans, element.x, element.y, 0);
-
-        const mat = mat4.create();
-        mat4.identity(mat);
-
-        mat4.scale(mat, mat, vec3Scale);
-        mat4.translate(mat, mat, vec3trans);
-
         const candleData = vec4.create();
-        vec4.set(candleData, element.trade.v1, element.trade.v2, element.trade.v3, element.trade.v4);
+        vec4.set(candleData, element.trade.high, element.trade.open, element.trade.close, element.trade.low);
 
-        this.gl.uniformMatrix4fv(this.modelLoc, false, mat); //4x4 matrix
+        this.gl.uniformMatrix4fv(this.modelLoc, false, element.modelMat); //4x4 matrix
         this.gl.uniformMatrix4fv(this.viewLoc, false, canvas.getView());
         this.gl.uniformMatrix4fv(this.projectionLoc, false, canvas.getProjection());
         this.gl.uniform4fv(this.candleDataLoc, candleData);

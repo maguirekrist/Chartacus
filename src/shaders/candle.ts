@@ -27,6 +27,11 @@ uniform vec4 u_candleData;
 out vec4 outColor;
     
 void main() {
+    float high = u_candleData.x;
+    float open = u_candleData.y;
+    float close = u_candleData.z;
+    float low = u_candleData.w;
+
     vec4 top =  model * vec4(0.0, 0.0, 0.0, 1.0); //This value is in NDC
     vec4 center = model * vec4(0.5, 0.5, 0.0, 1.0);
     mat4 vp = projection * view;
@@ -39,21 +44,23 @@ void main() {
     float distance = length(uv.xy - top.xy);
 
     //Y direction moves down
+    vec4 candleColor = (close > open) ? vec4(0.0, 1.0, 0.0, 1.0) : vec4(1.0, 0.0, 0.0, 1.0);
+
     
-    if(wow.y >= 80.0) {
+    if(wow.y >= 120.0) {
         if(uv.x <= (center.x + 2.0) && uv.x >= (center.x - 2.0)) {
-            outColor = color;
+            outColor = candleColor;
         } else {
             discard;
         }
     } else if(wow.y <= 40.0) {
         if(uv.x <= (center.x + 2.0) && uv.x >= (center.x - 2.0)) {
-            outColor = color;
+            outColor = candleColor;
         } else {
             discard;
         }
     } else {
-        outColor = color;
+        outColor = candleColor;
     }
 }
 `;

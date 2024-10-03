@@ -12,11 +12,11 @@ export type Coordinate = {
     y: number;
 }
 
-export type CandleStock = {
-    v1: number;
-    v2: number;
-    v3: number;
-    v4: number;
+export type Candlestick = {
+    high: number;
+    open: number;
+    close: number;
+    low: number;
 }
 
 export interface IPositionable {

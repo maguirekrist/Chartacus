@@ -3,9 +3,6 @@ import { Color, Grid, Point } from "./model/data";
 import { canvas } from "./utils/globals";
 import { Candle } from "./model/candle";
 
-document.addEventListener('DOMContentLoaded', () => {
-    main();
-});
 
 function GenerateRandomPoints(amt: number) : Point[] {
     let points: Point[] = [];
@@ -33,6 +30,7 @@ function main() {
     var gl = canvas.getCanvas().getContext("webgl2", { antialias: true });
     if(!gl)
     {
+        console.log("failed to load openGL");
         var element = document.createElement("div");
         element.textContent = "Unable to load webgl2 context";
         document.body.appendChild(element);
@@ -44,7 +42,7 @@ function main() {
         var originPoint: Point = new Point(0, 0, { r: 1, g: 0, b: 0.0 });
         //var grid: Grid = new Grid(1.0);
 
-        var testCandle: Candle = new Candle(3, 3, { v1: 120, v2: 60, v3: 20, v4: 10 });
+        var testCandle: Candle = new Candle(3, 3, { high: 300, open: 60, close: 80, low: 10 });
 
         var renderables: IDrawable[] = [...points, originPoint, testCandle];
 
@@ -109,3 +107,5 @@ function drawAllDrawables(elements: IDrawable[], renderer: RendererVistor) {
         elem.accept(renderer);
     }
 }
+
+main();
