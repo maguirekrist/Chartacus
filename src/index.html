@@ -16,10 +16,17 @@
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
-        test
         <div id="x-coord"></div>
         <div id="y-coord"></div>
         <div id="zoom"></div>
-        <canvas width="600" height="600" id="c"></canvas>
+        <div style="display: flex">
+            <div>
+                <canvas width="600" height="600" style="border: 1px solid black;" id="c"></canvas>
+            </div>
+            <div>
+                <canvas width="70" height="600" style="border: 1px solid black;" id="vert-c"></canvas>
+            </div>
+        </div>
+        <canvas width="600" height="40" style="border: 1px solid black;" id="vert-c"></canvas>
     </body>
 </html>

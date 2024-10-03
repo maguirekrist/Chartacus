@@ -1,4 +1,4 @@
-import { IDrawable, RendererVistor } from "../renderer";
+import { IDrawable, RendererVistor } from "../core/renderer";
 
 export type Color = { 
     r: number;

@@ -1,8 +1,8 @@
 import { Grid } from "../model/data";
-import { IRender } from "../renderer";
+import { IRender } from "../core/renderer";
 import { f_backgroundShaderSource, v_backgroundShaderSource } from "../shaders/background";
-import { canvas } from "../utils/globals";
 import { webglUtils } from "../utils/webglUtils";
+import { Canvas } from "../core/canvas";
 
 
 export class GridRenderer implements IRender<Grid> {
@@ -16,6 +16,7 @@ export class GridRenderer implements IRender<Grid> {
     ];
 
     gl: WebGL2RenderingContext;
+    canvas: Canvas;
     program: WebGLProgram;
     positionAttributeLocation: number;
     projectionLoc: WebGLUniformLocation;
@@ -24,24 +25,25 @@ export class GridRenderer implements IRender<Grid> {
 
     vao: WebGLVertexArrayObject;
 
-    constructor(gl: WebGL2RenderingContext) {
-        this.gl = gl;
+    constructor(canvas: Canvas) {
+        this.canvas = canvas;
+        this.gl = this.canvas.getGlContext();
         this.program = webglUtils.createProgramFromSources(this.gl, [v_backgroundShaderSource, f_backgroundShaderSource])
         var positionBuffer = this.gl.createBuffer();
-        gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer);  
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer);  
 
         this.positionAttributeLocation = this.gl.getAttribLocation(this.program, "a_position");
         this.viewLoc = this.gl.getUniformLocation(this.program, "view");
         this.projectionLoc = this.gl.getUniformLocation(this.program, "projection");
         this.resolutionLoc = this.gl.getUniformLocation(this.program, "u_resolution");
 
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.quadPoints), gl.STATIC_DRAW);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.quadPoints), this.gl.STATIC_DRAW);
         this.vao = this.gl.createVertexArray();
         this.gl.bindVertexArray(this.vao);
         this.gl.enableVertexAttribArray(this.positionAttributeLocation);
     
         var size = 2;          // 2 components per iteration
-        var type = gl.FLOAT;   // the data is 32bit floats
+        var type = this.gl.FLOAT;   // the data is 32bit floats
         var normalize = false; // don't normalize the data
         var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
         var offset = 0;        // start at the beginning of the buffer
@@ -53,10 +55,10 @@ export class GridRenderer implements IRender<Grid> {
         this.gl.useProgram(this.program);
         this.gl.bindVertexArray(this.vao);
 
-        this.gl.uniform2fv(this.resolutionLoc, [canvas.getCanvas().clientWidth, canvas.getCanvas().clientHeight]);
+        this.gl.uniform2fv(this.resolutionLoc, [this.canvas.getCanvas().clientWidth, this.canvas.getCanvas().clientHeight]);
 
-        this.gl.uniformMatrix4fv(this.viewLoc, false, canvas.getView());
-        this.gl.uniformMatrix4fv(this.projectionLoc, false, canvas.getProjection());
+        this.gl.uniformMatrix4fv(this.viewLoc, false, this.canvas.getView());
+        this.gl.uniformMatrix4fv(this.projectionLoc, false, this.canvas.getProjection());
         //gl.uniformMatrix4fv(projectionLoc, false, projectionMatrix);
 
         var primitiveType = this.gl.TRIANGLES;

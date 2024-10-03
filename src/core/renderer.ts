@@ -1,10 +1,11 @@
-import { Candle } from "./model/candle";
-import { Grid, Point } from "./model/data";
-import { Line } from "./model/line";
-import { CandleRenderer } from "./renderers/candle-renderer";
-import { GridRenderer } from "./renderers/grid-renderer";
-import { LineRenderer } from "./renderers/line-renderer";
-import { PointRenderer } from "./renderers/point-renderer";
+import { Candle } from "../model/candle";
+import { Grid, Point } from "../model/data";
+import { Line } from "../model/line";
+import { CandleRenderer } from "../renderers/candle-renderer";
+import { GridRenderer } from "../renderers/grid-renderer";
+import { LineRenderer } from "../renderers/line-renderer";
+import { PointRenderer } from "../renderers/point-renderer";
+import { Canvas } from "./canvas";
 
 export interface RendererVistor {
     draw(point: Point) : void;
@@ -27,11 +28,11 @@ export class Renderer implements RendererVistor {
     lineRenderer: LineRenderer;
     candleRenderer: CandleRenderer;
 
-    constructor(gl: WebGL2RenderingContext) {
-        this.pointRenderer = new PointRenderer(gl);
-        this.gridRenderer = new GridRenderer(gl);
-        this.lineRenderer = new LineRenderer(gl);
-        this.candleRenderer = new CandleRenderer(gl);
+    constructor(canvas: Canvas) {
+        this.pointRenderer = new PointRenderer(canvas);
+        this.gridRenderer = new GridRenderer(canvas);
+        this.lineRenderer = new LineRenderer(canvas);
+        this.candleRenderer = new CandleRenderer(canvas);
     }
 
     drawCandle(candle: Candle): void {

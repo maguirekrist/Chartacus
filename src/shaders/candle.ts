@@ -32,29 +32,33 @@ void main() {
     float close = u_candleData.z;
     float low = u_candleData.w;
 
-    vec4 top =  model * vec4(0.0, 0.0, 0.0, 1.0); //This value is in NDC
+    vec4 top =  model * vec4(0.0, 0.0, 0.0, 1.0); //This value is in world coordinates
     vec4 center = model * vec4(0.5, 0.5, 0.0, 1.0);
     mat4 vp = projection * view;
 
     vec2 ndc = (gl_FragCoord.xy / u_resolution) * 2.0 - 1.0;
     mat4 inverseProjection = inverse(vp);
-    vec4 uv = inverseProjection * vec4(ndc.x, ndc.y, 0.0, 1.0);
+    vec4 worldCoord = inverseProjection * vec4(ndc.x, ndc.y, 0.0, 1.0);
 
-    vec2 wow = uv.xy - top.xy;
-    float distance = length(uv.xy - top.xy);
+    vec2 vecFromTop = worldCoord.xy - top.xy;
+    float distance = length(worldCoord.xy - top.xy);
 
     //Y direction moves down
     vec4 candleColor = (close > open) ? vec4(0.0, 1.0, 0.0, 1.0) : vec4(1.0, 0.0, 0.0, 1.0);
 
+    float bodyTop = max(close, open);
+    float bodyBottom = min(close, open);
     
-    if(wow.y >= 120.0) {
-        if(uv.x <= (center.x + 2.0) && uv.x >= (center.x - 2.0)) {
+    float wickWidth = 0.5;
+
+    if(vecFromTop.y >= bodyTop) {
+        if(worldCoord.x <= (center.x + wickWidth) && worldCoord.x >= (center.x - wickWidth)) {
             outColor = candleColor;
         } else {
             discard;
         }
-    } else if(wow.y <= 40.0) {
-        if(uv.x <= (center.x + 2.0) && uv.x >= (center.x - 2.0)) {
+    } else if(vecFromTop.y <= bodyBottom) {
+        if(worldCoord.x <= (center.x + wickWidth) && worldCoord.x >= (center.x - wickWidth)) {
             outColor = candleColor;
         } else {
             discard;

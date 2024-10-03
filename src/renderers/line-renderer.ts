@@ -1,13 +1,14 @@
 import { Line } from "../model/line";
-import { IRender } from "../renderer";
+import { IRender } from "../core/renderer";
+import { Canvas } from "../core/canvas";
 
 
 
 export class LineRenderer implements IRender<Line> {
-    gl: WebGL2RenderingContext;
+    private _canvas: Canvas;
 
-    constructor(gl: WebGL2RenderingContext) {
-        this.gl = gl;
+    constructor(canvas: Canvas) {
+        this._canvas = canvas;
     }
 
     render(element: Line): void {

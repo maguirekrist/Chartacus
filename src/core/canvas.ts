@@ -1,21 +1,27 @@
 import { ReadonlyMat4, mat4, vec2, vec3 } from "gl-matrix";
-import { mathUtils } from "./utils/mathUtils";
-import { IPositionable } from "./model/data";
+import { IPositionable } from "../model/data";
 
 export class Canvas {
     private canvas: HTMLCanvasElement
+    private glContext: WebGL2RenderingContext;
     private view: mat4 = mat4.create();
-    private projection: mat4;
+    private projection: mat4 = mat4.create();
 
-    private dragging: boolean = false;
-    public zoom: number = 0.4;
+    public zoom: number = 1.0;
     private mousePosition: vec3 = vec3.create();
     public camPos: vec2 = vec2.create();
     private camCenter: vec2 = vec2.create();
 
-
+    private currentKey: string;
     private objectMap: Map<string, IPositionable>;
 
+    public xScale: number;
+    
+    private mouseDown: boolean = false;
+    private dragging: boolean = false;
+    private startX: number;
+    private startY: number;
+    private readonly dragThreshold: number = 5;
 
     constructor() {
         console.log("canvas constructed");
@@ -29,11 +35,30 @@ export class Canvas {
         this.handleResize();
         this.objectMap = new Map();
 
+        this.glContext = this.canvas.getContext("webgl2", { antialias: true });
+
+
         vec2.set(this.camPos , 0, 0);
         vec2.set(this.camCenter, 
             (this.canvas.clientWidth / 2.0) * this.zoom, 
             (this.canvas.clientHeight / 2.0) * this.zoom);
         this.updateView();
+        this.initGlContext();
+    }
+
+    private initGlContext()
+    {
+        var gl = this.canvas.getContext("webgl2", { antialias: true });
+        if(!gl)
+        {
+            console.error("failed to load openGL");
+            var element = document.createElement("div");
+            element.textContent = "Unable to load webgl2 context";
+            document.body.appendChild(element);
+            throw new Error("Failed to load webgl2 context.");
+        }
+
+        this.glContext = gl;
     }
 
     private handleScroll(event: WheelEvent) {
@@ -70,13 +95,23 @@ export class Canvas {
 
     private handleClick(event: MouseEvent) {
         if(event.button == 0) {
-            this.dragging = true;
-            this.toggleDragCursor();
+            this.startX = event.clientX;
+            this.startY = event.clientY;
+
+            if(this.objectMap.has(this.currentKey))
+            {
+                let obj = this.objectMap.get(this.currentKey);
+                console.log(obj);
+            }
+
+            this.mouseDown = true;
+            this.dragging = false;
         }
     }
 
     private handleMouseUp(event: MouseEvent) {
         this.dragging = false;
+        this.mouseDown = false;
         this.toggleDragCursor();
     }
 
@@ -105,7 +140,17 @@ export class Canvas {
     }
 
     private handleMouseMove(event: MouseEvent) {
-        //We want to store mousePosition in world-coordinates not in screen coordinates
+        const currentX = event.clientX;
+        const currentY = event.clientY;
+
+        const deltaX = currentX - this.startX;
+        const deltaY = currentY - this.startY;
+
+        // If the movement exceeds the threshold, consider it a drag
+        if (Math.sqrt(deltaX * deltaX + deltaY * deltaY) > this.dragThreshold && this.mouseDown) {
+            this.dragging = true;
+            this.toggleDragCursor();
+        }
         
         //For some reason, camPos is inverted?
         this.unprojectMouse(event);
@@ -115,7 +160,7 @@ export class Canvas {
         if(this.dragging) {
             //vec2.set(this.camPos, this.mousePosition[0] / this.canvas.clientWidth, this.mousePosition[1] / this.canvas.clientHeight)
             let changeVec = vec2.create();
-            vec2.set(changeVec, event.movementX, event.movementY);
+            vec2.set(changeVec, event.movementX, -event.movementY);
             //console.log(`dragging event: x -> ${event.movementX}, y -> ${event.movementY}`)
 
             vec2.add(this.camPos, this.camPos, changeVec);
@@ -125,11 +170,10 @@ export class Canvas {
             this.updateView();
         }
 
-        let key = `${Math.floor(this.mousePosition[0] / 25)},${Math.floor(this.mousePosition[1] / 25)}`;
+        this.currentKey = `${Math.floor(this.mousePosition[0] / this.xScale)}`;
 
         if(!this.dragging) {
-            if(this.objectMap.has(key)) {
-                let obj = this.objectMap.get(key);
+            if(this.objectMap.has(this.currentKey)) {
                 this.canvas.style.cursor = "pointer";
             } else {
                 this.canvas.style.cursor = "default";
@@ -140,8 +184,7 @@ export class Canvas {
 
     private handleResize() {
         console.log(`resize: w: ${this.canvas.clientWidth}, h:${this.canvas.clientHeight}, a: ${this.canvas.clientWidth / this.canvas.clientHeight}`)
-        this.projection = mathUtils.m4.projection(this.canvas.clientWidth, this.canvas.clientHeight, 400);
-        //console.log(this.projection);
+        mat4.ortho(this.projection, 0, this.canvas.width, 0, this.canvas.height, -1.0, 1.0);
     }
 
     private updateView() {
@@ -172,7 +215,7 @@ export class Canvas {
 
     public initializeObjectMap(objects: IPositionable[]): void {
         for(var obj of objects) {
-            this.objectMap.set(`${obj.x},${obj.y}`, obj);
+            this.objectMap.set(`${obj.x / this.xScale}`, obj);
         }
     }
 
@@ -180,6 +223,10 @@ export class Canvas {
         return this.canvas;
     }
 
+    public getGlContext() : WebGL2RenderingContext
+    {
+        return this.glContext;
+    }
 
     public getView() { 
         return this.view;
