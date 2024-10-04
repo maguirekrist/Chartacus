@@ -79,15 +79,13 @@ export class ChartacusEngine implements Observer {
         const graphWidth = this._canvas.getCanvas().width;
         const candleWidth = graphWidth / this._xRange.delta;
 
-        console.log(this._xRange);
-
         for(var i = 0; i < values.length; i++)
         {
             var index = this._xRange.begin + i;
             if(index >= 0 && index < values.length) {
                 const trade = values[index];
                 const date = keys[index];
-                //asume width is 25 px
+ 
                 var x = i * candleWidth;
                 var y = (trade.low - this._yRange.begin) * graphScale; //the height of the candle is determined by the distance low is from the lowest * graphScale
     
