@@ -1,5 +1,6 @@
 import { ReadonlyMat4, mat4, vec2, vec3 } from "gl-matrix";
 import { IPositionable } from "../model/data";
+import { GraphRange } from "./range";
 
 export class Canvas {
     private canvas: HTMLCanvasElement
@@ -23,10 +24,14 @@ export class Canvas {
     private startY: number;
     private readonly dragThreshold: number = 5;
 
-    constructor() {
+    private _yRange: GraphRange;
+    private _xRange: GraphRange;
+
+    constructor(yRange: GraphRange, xRange: GraphRange) {
         console.log("canvas constructed");
         this.canvas = document.getElementById("c") as HTMLCanvasElement;
         this.canvas.addEventListener('wheel', (event) => this.handleScroll(event));
+        this.canvas.addEventListener('mouseenter', (event) => this.handleMouseEnter(event));
         this.canvas.addEventListener('mousedown', (event) => this.handleClick(event));
         this.canvas.addEventListener('mousemove', (event) => this.handleMouseMove(event));
         this.canvas.addEventListener('mouseup', (event) => this.handleMouseUp(event));
@@ -37,6 +42,8 @@ export class Canvas {
 
         this.glContext = this.canvas.getContext("webgl2", { antialias: true });
 
+        this._yRange = yRange;
+        this._xRange = xRange;
 
         vec2.set(this.camPos , 0, 0);
         vec2.set(this.camCenter, 
@@ -62,35 +69,43 @@ export class Canvas {
     }
 
     private handleScroll(event: WheelEvent) {
-        if(event.deltaY != 0) {
-            if(this.zoom == undefined || this.zoom == 0) {
-                this.zoom = 1;
-            }
-            this.zoom += (event.deltaY / Math.abs(event.deltaY)) * -0.1; //zoom sensitvity
-            this.zoom = Math.min(Math.max(0.125, this.zoom), 4); //restrict the zoom level here
-            this.zoom = Math.round(this.zoom * 100) / 100;
-            //console.log(this.zoom)
-
-            let newCenter = vec2.create();
-            vec2.set(newCenter,
-                (this.canvas.clientWidth / 2.0) * (1.0 / this.zoom), 
-                (this.canvas.clientHeight / 2.0) * ( 1.0 / this.zoom)
-            );
-            //vec2.add(newCenter, newCenter, this.camPos);
-            //console.log(newCenter);
-
-            let diff = vec2.create();
-            vec2.subtract(diff, this.camCenter, newCenter);
-            vec2.set(this.camCenter, newCenter[0], newCenter[1]);
-            //vec2.add(this.camCenter, this.camCenter, diff); //new cam center
-            //Update camPos
-            vec2.negate(diff, diff);
-            //console.log(diff);
-            vec2.add(this.camPos, this.camPos, diff);
-            //vec2.floor(this.camPos, this.camPos);
-
-            this.updateView();
+        //disable scrolling for now
+        //TODO: Make scroll alter the horizontal scale
+        if(event.deltaY != 0)
+        {
+            var scrollDelta = (event.deltaY / Math.abs(event.deltaY)) * -0.8;
+            this._xRange.update(this._xRange.begin, this._xRange.end + scrollDelta);
         }
+
+        // if(event.deltaY != 0) {
+        //     if(this.zoom == undefined || this.zoom == 0) {
+        //         this.zoom = 1;
+        //     }
+        //     this.zoom += (event.deltaY / Math.abs(event.deltaY)) * -0.1; //zoom sensitvity
+        //     this.zoom = Math.min(Math.max(0.125, this.zoom), 4); //restrict the zoom level here
+        //     this.zoom = Math.round(this.zoom * 100) / 100;
+        //     //console.log(this.zoom)
+
+        //     let newCenter = vec2.create();
+        //     vec2.set(newCenter,
+        //         (this.canvas.clientWidth / 2.0) * (1.0 / this.zoom), 
+        //         (this.canvas.clientHeight / 2.0) * ( 1.0 / this.zoom)
+        //     );
+        //     //vec2.add(newCenter, newCenter, this.camPos);
+        //     //console.log(newCenter);
+
+        //     let diff = vec2.create();
+        //     vec2.subtract(diff, this.camCenter, newCenter);
+        //     vec2.set(this.camCenter, newCenter[0], newCenter[1]);
+        //     //vec2.add(this.camCenter, this.camCenter, diff); //new cam center
+        //     //Update camPos
+        //     vec2.negate(diff, diff);
+        //     //console.log(diff);
+        //     vec2.add(this.camPos, this.camPos, diff);
+        //     //vec2.floor(this.camPos, this.camPos);
+
+        //     this.updateView();
+        // }
     }
 
     private handleClick(event: MouseEvent) {
@@ -112,12 +127,19 @@ export class Canvas {
     private handleMouseUp(event: MouseEvent) {
         this.dragging = false;
         this.mouseDown = false;
-        this.toggleDragCursor();
+        this.canvas.style.cursor = "crosshair";
+        //this.toggleDragCursor();
+    }
+
+    private handleMouseEnter(event: MouseEvent) {
+        this.canvas.style.cursor = "crosshair";
     }
 
     private handleMouseLeave(event: MouseEvent) {
         this.dragging = false;
-        this.toggleDragCursor();
+        this.mouseDown = false;
+        this.canvas.style.cursor = "default";
+        //this.toggleDragCursor();
     }
 
     private toggleDragCursor() {
@@ -149,7 +171,8 @@ export class Canvas {
         // If the movement exceeds the threshold, consider it a drag
         if (Math.sqrt(deltaX * deltaX + deltaY * deltaY) > this.dragThreshold && this.mouseDown) {
             this.dragging = true;
-            this.toggleDragCursor();
+            this.canvas.style.cursor = "grabbing"
+            //this.toggleDragCursor();
         }
         
         //For some reason, camPos is inverted?
@@ -157,28 +180,41 @@ export class Canvas {
         
         //console.log(`mouse position: x -> ${this.mousePosition[0]}, y -> ${this.mousePosition[1]}`)
 
-        if(this.dragging) {
-            //vec2.set(this.camPos, this.mousePosition[0] / this.canvas.clientWidth, this.mousePosition[1] / this.canvas.clientHeight)
-            let changeVec = vec2.create();
-            vec2.set(changeVec, event.movementX, -event.movementY);
-            //console.log(`dragging event: x -> ${event.movementX}, y -> ${event.movementY}`)
-
-            vec2.add(this.camPos, this.camPos, changeVec);
-        
-            //vec2.add(this.camCenter, this.camCenter, changeVec);
-            //console.log(`Cam pos: ${this.camPos[0]}, ${this.camPos[1]}`)
-            this.updateView();
+        if(this.dragging)
+        {
+            this._yRange.shift(event.movementY);
+            if(event.movementX != 0)
+            {
+                // var translate = vec2.create();
+                // vec2.set(translate, event.movementX, 0);
+                // vec2.add(this.camPos, this.camPos, translate);
+                // this.updateView();
+                this._xRange.shift(-event.movementX);
+            }
         }
+
+        // if(this.dragging) {
+        //     //vec2.set(this.camPos, this.mousePosition[0] / this.canvas.clientWidth, this.mousePosition[1] / this.canvas.clientHeight)
+        //     let changeVec = vec2.create();
+        //     vec2.set(changeVec, event.movementX, -event.movementY);
+        //     //console.log(`dragging event: x -> ${event.movementX}, y -> ${event.movementY}`)
+
+        //     vec2.add(this.camPos, this.camPos, changeVec);
+        
+        //     //vec2.add(this.camCenter, this.camCenter, changeVec);
+        //     //console.log(`Cam pos: ${this.camPos[0]}, ${this.camPos[1]}`)
+        //     this.updateView();
+        // }
 
         this.currentKey = `${Math.floor(this.mousePosition[0] / this.xScale)}`;
 
-        if(!this.dragging) {
-            if(this.objectMap.has(this.currentKey)) {
-                this.canvas.style.cursor = "pointer";
-            } else {
-                this.canvas.style.cursor = "default";
-            }
-        }
+        // if(!this.dragging) {
+        //     if(this.objectMap.has(this.currentKey)) {
+        //         //this.canvas.style.cursor = "pointer";
+        //     } else {
+        //         this.canvas.style.cursor = "default";
+        //     }
+        // }
 
     }
 

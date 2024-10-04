@@ -18,11 +18,11 @@ export class Candle implements IDrawable, IPositionable {
     
     modelMat: mat4;
 
-    constructor(x: number, y: number, trade: Candlestick, original: Candlestick, date: string) {
+    constructor(x: number, y: number, width: number, trade: Candlestick, original: Candlestick, date: string) {
         this.x = x;
         this.y = y;
         this.originalTrade = original;
-        this.width = 25;
+        this.width = width;
         this.height = trade.high;
         this.trade = trade;
         this.date = date;
